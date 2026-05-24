@@ -43,6 +43,29 @@ public class ContactRepository
         cmd.ExecuteNonQuery();
     }
 
+    public void ModifierContact(int id, string adresse, string gsm, string telephone, string email)
+    {
+        using var cnx = Database.GetConnection();
+
+        string sql = @"
+            UPDATE contact
+            SET rue = @adresse,
+                gsm = @gsm,
+                telephone = @telephone,
+                email = @email
+            WHERE contact_identifiant = @id";
+
+        using var cmd = new NpgsqlCommand(sql, cnx);
+
+        cmd.Parameters.AddWithValue("id", id);
+        cmd.Parameters.AddWithValue("adresse", adresse);
+        cmd.Parameters.AddWithValue("gsm", gsm);
+        cmd.Parameters.AddWithValue("telephone", telephone);
+        cmd.Parameters.AddWithValue("email", email);
+
+        cmd.ExecuteNonQuery();
+    }
+
     private static Contact LireContact(NpgsqlDataReader r) => new()
     {
         ContactIdentifiant = r.GetInt32(r.GetOrdinal("contact_identifiant")),

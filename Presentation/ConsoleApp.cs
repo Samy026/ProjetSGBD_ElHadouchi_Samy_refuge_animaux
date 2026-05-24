@@ -31,7 +31,15 @@ public class ConsoleApp
                     case "7": AjouterContact(); break;
                     case "8": ListerContacts(); break;
                     case "9": SupprimerContact(); break;
-                    case "0": return;
+                    case "10": ModifierContact(); break;
+                    case "11": AjouterFamilleAccueil(); break;
+                    case "12": AjouterAdoption(); break;
+                    case "13": ModifierStatutAdoption(); break;
+                    case "14": ListerFamillesAccueilAnimal(); break;
+                    case "15": AjouterSortie(); break;
+                    case "16": AjouterCompatibilite(); break;
+                    case "0": return; break;
+    
                     default: Console.WriteLine("Choix invalide."); break;
                 }
             }
@@ -55,6 +63,13 @@ public class ConsoleApp
         Console.WriteLine("7. Ajouter une personne de contact");
         Console.WriteLine("8. Lister les contacts");
         Console.WriteLine("9. Supprimer un contact");
+        Console.WriteLine("10. Modifier un contact");
+        Console.WriteLine("11. Ajouter une famille d'accueil");
+        Console.WriteLine("12. Ajouter une adoption");
+        Console.WriteLine("13. Modifier le statut d'une adoption");
+        Console.WriteLine("14. Lister les familles d'accueil d'un animal");
+        Console.WriteLine("15. Ajouter une sortie à un animal");
+        Console.WriteLine("16. Ajouter une compatibilité à un animal");
         Console.WriteLine("0. Quitter");
     }
 
@@ -152,11 +167,142 @@ public class ConsoleApp
         Console.WriteLine("Vaccin ajouté.");
     }
 
+    private void ModifierContact()
+    {
+        int id = int.Parse(LireObligatoire("Identifiant du contact : "));
+
+        string adresse = LireObligatoire("Nouvelle adresse : ");
+        string gsm = LireObligatoire("Nouveau GSM : ");
+        string telephone = LireObligatoire("Nouveau téléphone : ");
+        string email = LireObligatoire("Nouvel email : ");
+
+        _contactRepo.ModifierContact(id, adresse, gsm, telephone, email);
+
+        Console.WriteLine("Contact modifié.");
+    }
+
+    private void AjouterFamilleAccueil()
+    {
+        string animalId = LireObligatoire("Identifiant de l'animal : ");
+
+        int contactId = int.Parse(LireObligatoire("Identifiant du contact : "));
+
+        DateOnly dateDebut = DateOnly.Parse(
+            LireObligatoire("Date d'arrivée (yyyy-mm-dd) : ")
+        );
+
+        _animalRepo.AjouterFamilleAccueil(animalId, contactId, dateDebut);
+
+        Console.WriteLine("Famille d'accueil ajoutée.");
+    }
+
+    private void AjouterAdoption()
+    {
+        string animalId = LireObligatoire("Identifiant de l'animal : ");
+
+        int contactId = int.Parse(
+            LireObligatoire("Identifiant du contact : ")
+        );
+
+        DateOnly dateDemande = DateOnly.Parse(
+            LireObligatoire("Date de demande (yyyy-mm-dd) : ")
+        );
+
+        _animalRepo.AjouterAdoption(animalId, contactId, dateDemande);
+
+        Console.WriteLine("Adoption ajoutée.");
+    }
+
+    private void ModifierStatutAdoption()
+    {
+        int idAdoption = int.Parse(
+            LireObligatoire("Identifiant de l'adoption : ")
+        );
+
+        Console.WriteLine(
+            "Statuts possibles : demande, acceptee, rejet_environnement, rejet_comportement"
+        );
+
+        string statut = LireObligatoire("Nouveau statut : ");
+
+        _animalRepo.ModifierStatutAdoption(idAdoption, statut);
+
+        Console.WriteLine("Statut de l'adoption modifié.");
+    }
+
+    private void ListerFamillesAccueilAnimal()
+    {
+        string animalId = LireObligatoire(
+            "Identifiant de l'animal : "
+        );
+
+        _animalRepo.ListerFamillesAccueilAnimal(animalId);
+    }
+
+    private void AjouterSortie()
+    {
+        string animalId = LireObligatoire(
+            "Identifiant de l'animal : "
+        );
+
+        int contactId = int.Parse(
+            LireObligatoire("Identifiant du contact : ")
+        );
+
+        Console.WriteLine(
+            "Raisons possibles : adoption, retour_proprietaire, deces_animal, famille_accueil"
+        );
+
+        string raison = LireObligatoire("Raison : ");
+
+        DateOnly dateSortie = DateOnly.Parse(
+            LireObligatoire("Date sortie (yyyy-mm-dd) : ")
+        );
+
+        _animalRepo.AjouterSortie(
+            animalId,
+            contactId,
+            raison,
+            dateSortie
+        );
+
+        Console.WriteLine("Sortie ajoutée.");
+    }
     private static string LireObligatoire(string libelle)
     {
         string? valeur;
         do { Console.Write($"{libelle} : "); valeur = Console.ReadLine(); } while (string.IsNullOrWhiteSpace(valeur));
         return valeur.Trim();
+    }
+
+    private void AjouterCompatibilite()
+    {
+        string animalId = LireObligatoire(
+            "Identifiant de l'animal : "
+        );
+
+        Console.WriteLine("1 = chat");
+        Console.WriteLine("2 = chien");
+        Console.WriteLine("3 = jeune enfant");
+        Console.WriteLine("4 = enfant");
+        Console.WriteLine("5 = jardin");
+        Console.WriteLine("6 = poney");
+
+        int idCompatibilite = int.Parse(
+            LireObligatoire("Id compatibilité : ")
+        );
+
+        string valeur = LireObligatoire(
+            "Valeur (oui/non/non teste) : "
+        );
+
+        _animalRepo.AjouterCompatibilite(
+            animalId,
+            idCompatibilite,
+            valeur
+        );
+
+        Console.WriteLine("Compatibilité ajoutée.");
     }
 
     private static string? LireOptionnel(string libelle)

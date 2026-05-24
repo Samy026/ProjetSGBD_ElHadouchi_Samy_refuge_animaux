@@ -51,6 +51,168 @@ public class AnimalRepository
         cmd.Parameters.AddWithValue("id", id);
         cmd.ExecuteNonQuery();
     }
+    public void ModifierContact(int id, string adresse, string gsm, string telephone, string email)
+    {
+        using var cnx = Database.GetConnection();
+
+        string sql = @"
+            UPDATE contact
+            SET rue = @adresse,
+                gsm = @gsm,
+                telephone = @telephone,
+                email = @email
+            WHERE contact_identifiant = @id";
+
+        using var cmd = new NpgsqlCommand(sql, cnx);
+
+        cmd.Parameters.AddWithValue("id", id);
+        cmd.Parameters.AddWithValue("adresse", adresse);
+        cmd.Parameters.AddWithValue("gsm", gsm);
+        cmd.Parameters.AddWithValue("telephone", telephone);
+        cmd.Parameters.AddWithValue("email", email);
+
+        cmd.ExecuteNonQuery();
+    }
+
+    public void AjouterFamilleAccueil(string animalId, int contactId, DateOnly dateDebut)
+    {
+        using var cnx = Database.GetConnection();
+
+        string sql = @"
+            INSERT INTO famille_accueil
+            (date_debut, fa_ani_identifiant, fa_contact)
+            VALUES
+            (@dateDebut, @animalId, @contactId)";
+
+        using var cmd = new NpgsqlCommand(sql, cnx);
+
+        cmd.Parameters.AddWithValue("dateDebut", dateDebut);
+        cmd.Parameters.AddWithValue("animalId", animalId);
+        cmd.Parameters.AddWithValue("contactId", contactId);
+
+        cmd.ExecuteNonQuery();
+    }
+
+    public void AjouterAdoption(string animalId, int contactId, DateOnly dateDemande)
+    {
+        using var cnx = Database.GetConnection();
+
+        string sql = @"
+            INSERT INTO adoption
+            (statut, date_demande, ani_identifiant, adop_contact)
+            VALUES
+            ('demande', @dateDemande, @animalId, @contactId)";
+
+        using var cmd = new NpgsqlCommand(sql, cnx);
+
+        cmd.Parameters.AddWithValue("dateDemande", dateDemande);
+        cmd.Parameters.AddWithValue("animalId", animalId);
+        cmd.Parameters.AddWithValue("contactId", contactId);
+
+        cmd.ExecuteNonQuery();
+    }
+
+    public void ModifierStatutAdoption(int idAdoption, string statut)
+    {
+        using var cnx = Database.GetConnection();
+
+        string sql = @"
+            UPDATE adoption
+            SET statut = @statut
+            WHERE id_adoption = @idAdoption";
+
+        using var cmd = new NpgsqlCommand(sql, cnx);
+
+        cmd.Parameters.AddWithValue("statut", statut);
+        cmd.Parameters.AddWithValue("idAdoption", idAdoption);
+
+        cmd.ExecuteNonQuery();
+    }
+
+    public void ListerFamillesAccueilAnimal(string animalId)
+    {
+        using var cnx = Database.GetConnection();
+
+        string sql = @"
+            SELECT fa_contact, date_debut, date_fin
+            FROM famille_accueil
+            WHERE fa_ani_identifiant = @animalId";
+
+        using var cmd = new NpgsqlCommand(sql, cnx);
+
+        cmd.Parameters.AddWithValue("animalId", animalId);
+
+        using var reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+        {
+            int contact = reader.GetInt32(0);
+
+            DateOnly dateDebut =
+                reader.GetFieldValue<DateOnly>(1);
+
+            string dateFin = reader.IsDBNull(2)
+                ? "En cours"
+                : reader.GetFieldValue<DateOnly>(2).ToString();
+
+            Console.WriteLine(
+                $"Contact : {contact} | Début : {dateDebut} | Fin : {dateFin}"
+            );
+        }
+    }
+
+    public void AjouterSortie(
+        string animalId,
+        int contactId,
+        string raison,
+        DateOnly dateSortie
+    )
+    {
+        using var cnx = Database.GetConnection();
+
+        string sql = @"
+            INSERT INTO ani_sortie
+            (raison, date_sortie, ani_identifiant, sortie_contact)
+            VALUES
+            (@raison, @dateSortie, @animalId, @contactId)";
+
+        using var cmd = new NpgsqlCommand(sql, cnx);
+
+        cmd.Parameters.AddWithValue("raison", raison);
+        cmd.Parameters.AddWithValue("dateSortie", dateSortie);
+        cmd.Parameters.AddWithValue("animalId", animalId);
+        cmd.Parameters.AddWithValue("contactId", contactId);
+
+        cmd.ExecuteNonQuery();
+    }
+
+    public void AjouterCompatibilite(
+        string animalId,
+        int idCompatibilite,
+        string valeur
+    )
+    {
+        using var cnx = Database.GetConnection();
+
+        string sql = @"
+            INSERT INTO ani_compatibilite
+            (ani_identifiant, comp_identifiant, valeur)
+            VALUES
+            (@animalId, @compIdentifiant, @valeur)";
+
+        using var cmd = new NpgsqlCommand(sql, cnx);
+
+        cmd.Parameters.AddWithValue("animalId", animalId);
+
+        cmd.Parameters.AddWithValue(
+            "compIdentifiant",
+            idCompatibilite
+        );
+
+        cmd.Parameters.AddWithValue("valeur", valeur);
+
+        cmd.ExecuteNonQuery();
+    }
 
     private static Animal LireAnimal(NpgsqlDataReader r) => new()
     {
